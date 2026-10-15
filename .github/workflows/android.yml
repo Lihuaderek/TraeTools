@@ -1,16 +1,31 @@
-name: Android
+name: Android Branch CI
 
 on:
   push:
-    branches: [main]
+    branches: [android]
   pull_request:
-    branches: [main]
+    branches: [android]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  # Android 工程链接的是仓库根目录的共享源码，改了共享文件必须保证 Windows 侧仍能编译
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build Windows (Release)
+        run: dotnet build TraeTools.csproj -c Release --nologo
+
   build-android:
     runs-on: ubuntu-latest
     steps:
