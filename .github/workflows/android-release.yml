@@ -1,0 +1,53 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - "android-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      - name: Build Android (Release)
+        run: dotnet build Android/TraeTools.Android.csproj -c Release --nologo
+
+      - name: Collect APK
+        run: |
+          set -e
+          mkdir -p dist
+          find Android/bin/Release/net10.0-android -name '*.apk' -exec cp -v {} dist/ \;
+          ls -la dist
+          test -n "$(ls -A dist)"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "TraeTools Android ${{ github.ref_name }}"
+          body: |
+            TraeTools Android ${{ github.ref_name }} —— 手机端（Avalonia + .NET 10，net10.0-android）
+
+            ## 安装
+            1. 下载下方 .apk（要求 Android 8.0 / API 26 及以上）；
+            2. 在手机上允许「安装未知来源应用」后点击安装；
+            3. 首次启动后在 App 内粘贴 Cloud-IDE-Token 登录（手机端无本机 Trae 客户端，不能自动取凭证）。
+
+            > 目前用调试密钥签名，仅供自用 / 内测；正式分发请自行配置签名密钥。
+            > 账号切换的本地客户端操作、开机自启、托盘与自带更新器为 Windows 专有，手机端不含。
+          files: dist/*.apk
+          generate_release_notes: true
