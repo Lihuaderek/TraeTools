@@ -28,7 +28,7 @@ dotnet build Android/TraeTools.Android.csproj -c Release
 ```
 
 产物：`Android/bin/Release/net10.0-android/*.apk`（最低 Android 8.0 / API 26）。
-包名 `com.traetools.android`，`versionName` 取自根目录 `version.json`。
+包名 `com.star620.traetools`，`versionName` 取自根目录 `version.json`。
 Release 默认使用调试密钥签名，正式分发请自行配置 keystore。
 
 CI 见仓库根的 `.github/workflows/android.yml`（编译并上传 APK）。

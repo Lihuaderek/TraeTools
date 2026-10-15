@@ -59,8 +59,9 @@
   <PropertyGroup>
     <!-- Android 8.0（API 26）：Avalonia 12 Android 后端的下限，也覆盖绝大多数在用机型 -->
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
-    <!-- 包名与 versionCode 是应用的永久身份；如要发布到自己的账号，请就地改成自己的标识 -->
-    <ApplicationId>com.traetools.android</ApplicationId>
+    <!-- 包名与 versionCode 是应用的永久身份，一经发布不可更改（改了就无法覆盖安装）。
+         这里用上游维护者的标识，避免发布到自己的账号时与占位包名冲突。 -->
+    <ApplicationId>com.star620.traetools</ApplicationId>
     <!-- android:versionName —— 与 version.json 同源，否则「系统-应用信息」与 App 内「关于」会互相矛盾 -->
     <ApplicationDisplayVersion Condition="'$(_VJsonVer)' != ''">$(_VJsonVer)</ApplicationDisplayVersion>
     <ApplicationDisplayVersion Condition="'$(_VJsonVer)' == ''">1.0.0</ApplicationDisplayVersion>
