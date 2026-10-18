@@ -44,8 +44,10 @@ jobs:
         run: dotnet build Android/TraeTools.Android.csproj -c Release --nologo
 
       - name: Upload APK
+        # 工程按 RuntimeIdentifiers 分别打包（android-arm64 / android-arm），APK 落在
+        # net10.0-android/<rid>/ 子目录下，因此必须用递归通配符，否则匹配不到任何文件。
         uses: actions/upload-artifact@v4
         with:
           name: trae-tools-android-apk
-          path: Android/bin/Release/net10.0-android/*.apk
+          path: Android/bin/Release/net10.0-android/**/*.apk
           if-no-files-found: error

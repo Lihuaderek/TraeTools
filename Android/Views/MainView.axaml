@@ -31,8 +31,8 @@
             <Setter Property="FontWeight" Value="Normal" />
         </Style>
         <Style Selector="Button.tab-item:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#22FFFFFF" />
-            <Setter Property="TextElement.Foreground" Value="White" />
+            <Setter Property="Background" Value="{DynamicResource NavHoverBrush}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource TextMainBrush}" />
         </Style>
         <Style Selector="Button.tab-item-active">
             <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
@@ -43,6 +43,18 @@
             <Setter Property="FontSize" Value="12.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
+        <!-- 图标显式着色（不依赖继承），并随主题与状态变化：
+             浅色主题下导航条是浅灰底，写死白色图标会看不见，因此默认/悬停走主题文本色，
+             仅选中态（蓝底）保持白色 -->
+        <Style Selector="Button.tab-item TextBlock.tab-icon">
+            <Setter Property="Foreground" Value="{DynamicResource TextSubBrush}" />
+        </Style>
+        <Style Selector="Button.tab-item:pointerover TextBlock.tab-icon">
+            <Setter Property="Foreground" Value="{DynamicResource TextMainBrush}" />
+        </Style>
+        <Style Selector="Button.tab-item-active TextBlock.tab-icon">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
     </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,Auto,*">
@@ -51,57 +63,64 @@
         <Border Grid.Row="0" Background="{DynamicResource SidebarBgBrush}" Padding="16,14,16,8">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" Spacing="2">
-                    <TextBlock Text="TraeTools" Foreground="White" FontSize="19" FontWeight="Bold" />
-                    <TextBlock Text="签到 · 账号切换 · 用量统计" Foreground="#94A3B8" FontSize="11" />
+                    <TextBlock Text="TraeTools" Foreground="{DynamicResource TextMainBrush}" FontSize="19" FontWeight="Bold" />
+                    <TextBlock Text="签到 · 账号切换 · 用量统计" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" />
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding AppVersion}" VerticalAlignment="Center"
-                           Foreground="#64748B" FontSize="11" />
+                           Foreground="{DynamicResource TextSubBrush}" FontSize="11" />
             </Grid>
         </Border>
 
-        <!-- ===== 导航条：横向可滚动，窄屏也能完整点到 6 个入口 ===== -->
+        <!-- ===== 导航条：横向可滚动，窄屏也能完整点到 7 个入口 ===== -->
         <ScrollViewer Grid.Row="1" Background="{DynamicResource SidebarBgBrush}"
                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <StackPanel Orientation="Horizontal" Spacing="6" Margin="12,0,12,10">
                 <Button Classes="tab-item" Classes.tab-item-active="{Binding IsDashboardActive}"
                         Command="{Binding NavigateCommand}" CommandParameter="dashboard">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="▦" VerticalAlignment="Center" Foreground="White" />
+                        <TextBlock Classes="tab-icon" Text="▦" VerticalAlignment="Center" />
                         <TextBlock Text="仪表盘" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Classes="tab-item" Classes.tab-item-active="{Binding IsUsageActive}"
                         Command="{Binding NavigateCommand}" CommandParameter="usage">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="Σ" VerticalAlignment="Center" Foreground="White" />
+                        <TextBlock Classes="tab-icon" Text="Σ" VerticalAlignment="Center" />
                         <TextBlock Text="用量统计" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Classes="tab-item" Classes.tab-item-active="{Binding IsCheckinActive}"
                         Command="{Binding NavigateCommand}" CommandParameter="checkin">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="✓" VerticalAlignment="Center" Foreground="White" />
+                        <TextBlock Classes="tab-icon" Text="✓" VerticalAlignment="Center" />
                         <TextBlock Text="每日签到" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Classes="tab-item" Classes.tab-item-active="{Binding IsSwitchActive}"
                         Command="{Binding NavigateCommand}" CommandParameter="switch">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="⇄" VerticalAlignment="Center" Foreground="White" />
+                        <TextBlock Classes="tab-icon" Text="⇄" VerticalAlignment="Center" />
                         <TextBlock Text="账号切换" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Classes="tab-item" Classes.tab-item-active="{Binding IsCloudActive}"
                         Command="{Binding NavigateCommand}" CommandParameter="cloud">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="☁" VerticalAlignment="Center" Foreground="White" />
+                        <TextBlock Classes="tab-icon" Text="☁" VerticalAlignment="Center" />
                         <TextBlock Text="云端签到" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="tab-item" Classes.tab-item-active="{Binding IsLogActive}"
+                        Command="{Binding NavigateCommand}" CommandParameter="log">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="tab-icon" Text="≡" VerticalAlignment="Center" />
+                        <TextBlock Text="运行日志" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Classes="tab-item" Classes.tab-item-active="{Binding IsSettingsActive}"
                         Command="{Binding NavigateCommand}" CommandParameter="settings">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="⚙" VerticalAlignment="Center" Foreground="White" />
+                        <TextBlock Classes="tab-icon" Text="⚙" VerticalAlignment="Center" />
                         <TextBlock Text="设置" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>

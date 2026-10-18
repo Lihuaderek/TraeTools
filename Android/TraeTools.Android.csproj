@@ -125,9 +125,14 @@
              Link="Shared\ViewModels\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\ViewLocator.cs" Link="Shared\ViewLocator.cs" />
 
-    <!-- Services：排除三个 Windows 专属实现，它们由 Android\Services\ 下的同名类型顶替 -->
+    <!-- Services：排除 Windows 专属实现，它们由 Android\Services\ 下的同名类型顶替。
+         Login 目录只排除三个与 Windows 客户端/宿主绑定的实现（CredentialImporter 读本机
+         Trae 客户端凭据、LocalClientImporter 扫描本机目录、LoginHostClient 拉起独立登录宿主进程），
+         但 AccountBackup.cs 必须保留：它是纯托管密码学实现（PBKDF2 + AES-GCM，无平台 API），
+         且 Services\Json\AppJson.cs 的源生成上下文里登记了 AccountBackup.Payload/Envelope，
+         若排除会与共享的 AppJson.cs 一起编译失败（CS0246）。 -->
     <Compile Include="..\Services\**\*.cs"
-             Exclude="..\Services\DataPaths.cs;..\Services\Checkin\AutoStartManager.cs;..\Services\Login\**"
+             Exclude="..\Services\DataPaths.cs;..\Services\Checkin\AutoStartManager.cs;..\Services\Login\CredentialImporter.cs;..\Services\Login\LocalClientImporter.cs;..\Services\Login\LoginHostClient.cs"
              Link="Shared\Services\%(RecursiveDir)%(Filename)%(Extension)" />
 
     <!-- 六个页面视图（CheckinView / CloudView / DashboardView / SettingsView / SwitchView / UsageView） -->
