@@ -80,7 +80,6 @@
          AOT 下会抛 MissingRuntimeArtifactException（表现为「启动即闪退」）。
          本应用是网络 IO 型工具，AOT 收益有限，稳定性优先。 -->
     <RunAOTCompilation>false</RunAOTCompilation>
-    <AOTAssemblies>false</AOTAssemblies>
     <AndroidLinkMode>None</AndroidLinkMode>
     <PublishTrimmed>false</PublishTrimmed>
     <!-- Android 不支持单文件发布 -->

@@ -31,9 +31,9 @@ jobs:
         run: |
           set -e
           mkdir -p dist
-          # 只收已签名（安装得上的）APK：默认排除 *-unsigned.apk。
-          # 工程按 RuntimeIdentifiers 分别打包，APK 位于 net10.0-android/<rid>/ 子目录，故用 find 递归。
-          find Android/bin/Release/net10.0-android -name '*.apk' ! -name '*unsigned*' -exec cp -v {} dist/ \;
+          # 只收已签名的 APK：.NET Android 会同时产出 com.star620.traetools.apk（未签名，装不上）
+          # 与 com.star620.traetools-Signed.apk（已用调试密钥签名，可直接安装），只发后者。
+          find Android/bin/Release/net10.0-android -name '*-Signed.apk' -exec cp -v {} dist/ \;
           ls -la dist
           test -n "$(ls -A dist)"
 
