@@ -13,7 +13,7 @@ Trae 每日签到脚本（GitHub Actions 版）
 环境变量：
   TRAE_SESSION        账号 1 的 X-Cloudide-Session Cookie（必填；后端兼容单账号部署）
   TRAE_DEVICE_ID      账号 1 的 x-device-id，16 位数字（选填，缺省随机）
-  TRAE_SESSION_N      第 N(N≥2) 个账号的会话 Cookie；缺失即停止读取更多账号
+  TRAE_SESSION_N      第 N(N>=2) 个账号的会话 Cookie；缺失即停止读取更多账号
   TRAE_DEVICE_ID_N    第 N 个账号的 x-device-id（选填，缺省随机）
   全部账号共享：       FEISHU_WEBHOOK（选填，签到后推送一条汇总）
 
@@ -28,13 +28,14 @@ import random
 import sys
 import time
 import urllib.request
+import urllib.error
 
 BASE = "https://api.trae.cn"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
 
 
 def _post(path, headers, body=""):
     """POST 请求。非 2xx 不抛 HTTPError，而是以 (status, body) 正常返回，便于上层判断原因。"""
-    import urllib.error
     req = urllib.request.Request(BASE + path, data=body.encode("utf-8"), headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -49,7 +50,7 @@ def get_token(session: str) -> str:
         "Cookie": "X-Cloudide-Session=" + session,
         "Referer": "https://www.trae.cn/",
         "Origin": "https://www.trae.cn",
-        "User-Agent": "TraeCheckin/1.0",
+        "User-Agent": UA,
         "Accept": "application/json, text/plain, */*",
     }
     status, text = _post("/cloudide/api/v3/common/GetUserToken", headers)
@@ -65,6 +66,24 @@ def get_token(session: str) -> str:
     return token
 
 
+def get_status(token: str, device_id: str) -> dict:
+    """查询今日签到状态。"""
+    headers = {
+        "Authorization": "Cloud-IDE-JWT " + token,
+        "X-User-Region": "cn",
+        "x-device-id": device_id,
+        "Origin": "https://www.trae.cn",
+        "Referer": "https://www.trae.cn/",
+        "User-Agent": UA,
+    }
+    req = urllib.request.Request(BASE + "/trae/api/v2/ug/checkin_credits/status", headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8", errors="replace"))
+    except Exception:
+        return {}
+
+
 def checkin(token: str, device_id: str) -> dict:
     """执行每日签到（claim）。"""
     headers = {
@@ -72,7 +91,9 @@ def checkin(token: str, device_id: str) -> dict:
         "X-User-Region": "cn",
         "x-device-id": device_id,
         "Content-Type": "application/json",
-        "User-Agent": "TraeCheckin/1.0",
+        "Origin": "https://www.trae.cn",
+        "Referer": "https://www.trae.cn/",
+        "User-Agent": UA,
     }
     status, text = _post("/trae/api/v2/ug/checkin_credits/claim", headers, "{}")
     try:
@@ -96,7 +117,7 @@ def notify_feishu(webhook, text):
 
 def beijing_now_str():
     """返回北京时间字符串（GitHub Actions 运行在 UTC，需 +8 小时）。"""
-    return (datetime.datetime.utcnow() + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def iter_sessions():
@@ -139,6 +160,14 @@ def main():
         try:
             token = get_token(session)
             print("[%s] 已换取新 JWT，长度=%d" % (name, len(token)))
+
+            # 先查询今日签到状态
+            st = get_status(token, device_id)
+            if st.get("checked_in"):
+                print("[%s] 今日已签到，状态正常（今日无需重复签到）" % name)
+                ok_names.append(name)
+                continue
+
             result = checkin(token, device_id)
             body = result["body"]
             code = body.get("code", -1)
@@ -152,6 +181,14 @@ def main():
                 result = checkin(token, device_id)
                 body = result["body"]
                 code = body.get("code", -1)
+
+            # 再次查验 status 兜底
+            if code != 0:
+                st = get_status(token, device_id)
+                if st.get("checked_in"):
+                    code = 0
+                    body["checked_in"] = True
+
             checked = body.get("checked_in", False)
             ok = (result["http"] == 200) and (code == 0 or checked)
             credits = body.get("credits", 0)
